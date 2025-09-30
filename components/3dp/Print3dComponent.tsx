@@ -1,6 +1,6 @@
 import React, {ReactElement, Ref, useEffect, useState} from 'react'
 import * as THREE from "three";
-import {AnalysisPrint3d, endpoint, makeDownloadUrl, SpecPrint3d, Print3dForm} from "@api/api";
+import {AnalysisPrint3d, endpoint, makeDownloadUrl, SpecPrint3d, Print3dForm, PartComponentProps} from "@api/api";
 import {Print3dForm} from "./SpecPrint3dForm";
 import {useSupabase} from "@hooks/SupabaseProvider";
 import styles from './Print3dComponent.module.css';
@@ -113,7 +113,8 @@ function toThreeMatrix(m) {
 function ModelPreview({
                             width,
                             height,
-                            spec,
+                            orderId,
+                          fileRevisionId,
                             analysis,
     actorIndex,
                             render,
@@ -126,7 +127,7 @@ function ModelPreview({
     const [geomGroup, setGeomGroup] = useState();
     const [zoom, setZoom] = useState(0);  // 0 -> 1
 
-    const actor = analysis.actors[actorIndex];
+    const actor = analysis?.actors && analysis.actors[actorIndex];
 
     useEffect(() => {
         // Scene setup
@@ -158,7 +159,6 @@ function ModelPreview({
         }
         let isMounted = true;
 
-
         let newGeomGroup = new THREE.Group();
         scene.add(newGeomGroup);
         setGeomGroup(newGeomGroup);
@@ -171,7 +171,7 @@ function ModelPreview({
         // scene.add(new THREE.AxesHelper(15));
 
         const fetchData = async () => {
-            const url = await makeDownloadUrl(supabase, spec.order_id, spec.stl);
+            const url = await makeDownloadUrl(supabase, orderId, fileRevisionId);
             const res = await fetch(url);
             const arrayBuffer = await res.arrayBuffer();
 
@@ -325,93 +325,48 @@ function ModelPreview({
 const MemoizedModelPreview = React.memo(ModelPreview);
 
 
-interface Print3dComponentProps {
-    actorIndex: number;
-    partName: string;
-    spec_id: string;
-    stablePartId: string;
-    orderId: string;
-    onSpecChange: (touched: boolean, spec: SpecPrint3d) => void;
-    isEditSpec: boolean;
-    isEditPattern: boolean;
-    triggerEdit: () => void;
-    triggerRemove: () => void;
-    triggerManualPrice: () => void;
-}
+const Memoized3d = React.memo(function({actorIndex, orderId, fileRevisionId, analysis}) {
+    return <RerenderOnWidthChange
+        height={300} className={styles.canvas} containerStyle={{width: '300px'}}>
+        {(width, render, canvasRef) => (
+            // render() is stable, since created with useCallback.
+            // Memorizing this expensive component means that it is not re-rendered when the parent element
+            // changes. Only when the props change.
+            <MemoizedModelPreview
+                actorIndex={actorIndex}
+                width={width}
+                height={300}
+                orderId={orderId}
+                fileRevisionId={fileRevisionId}
+                analysis={analysis}
+                render={render}
+                canvasRef={canvasRef}/>
+        )}
+    </RerenderOnWidthChange>;
+})
 
 export function Print3dComponent({
+                                     part,
+                                     partVariations,
                                      actorIndex,
                                      partName,
-                                           spec_id,
+                                           partType,
+                                     orderId,
+                                     stablePartId,
                                            onSpecChange,
-                                           isEditSpec,
-                                           isEditPattern,
+                                           isEdit,
                                            triggerEdit,
                                            triggerRemove,
                                            triggerManualPrice,
                                            readOnly,
-                                           stablePartId, orderId
-                                       }: Print3dComponentProps) {
+          symbol, spec, analysis, files
+                                     }: PartComponentProps) {
     const {supabase, loading} = useSupabase();
-    const [analysis, setAnalysis] = useState<AnalysisPrint3d>();
-    const [focusedPattern, setFocusedPattern] = useState();
-    const [spec, setSpec] = useState<SpecPrint3d>();
     const [expanded, setExpanded] = useState(false);
     const {isTenantAdmin} = useAccountsAndTenantAdmin();
-    const [coverageVisible, setCoverageVisible] = useState(false);
-    const [files, setFiles] = useState([]);
     const [latestFile, setLatestFile] = useState(null);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchData = async () => {
-            let {data, error} = await supabase
-                .from('SpecPrint3d')
-                .select('*')
-                .eq('id', spec_id)
-                .single();
-            const newSpec: SpecPrint3d = data;
-            setSpec(newSpec);
-            if (!isMounted) return;
-
-            ({data, error} = await supabase
-                .from('AnalysisPrint3d')
-                .select('*')
-                .eq('spec_id', newSpec.id)
-                .single());
-            if (!isMounted) return;
-            const analysis: AnalysisPrint3d = data;
-            setAnalysis(analysis);
-
-            ({data, error} = await supabase
-                .from('File')
-                .select('*, FileRevision(*)')
-                .eq('order_id', orderId)
-                .eq('part_stable_id', stablePartId));
-            const newFiles: any[] = data;
-
-            for (let file of newFiles) {
-                file.latestRevision = file.FileRevision[file.FileRevision.length - 1];  // fixme
-            }
-            setFiles(newFiles);
-
-            if (newFiles.length > 0) {
-                setLatestFile(newFiles[0]);
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [spec_id]);
-
-    if (!analysis) {
-        return;
-    }
-    const actor = analysis.actors[actorIndex];
+    const actor = analysis?.actors && analysis.actors[actorIndex];
 
     function trigger(attr) {
         const newSpec = {
@@ -440,22 +395,24 @@ export function Print3dComponent({
     }
 
     return <>
+    {JSON.stringify(partVariations)}
+
         <div className={styles.titleLine}>
             <div>{partName}</div>
             <div className={styles.revisionButtons} role="group">
-                {!isEditSpec && <button className={styles.revisionButton} onClick={() => setExpanded(!expanded)}>
+                {!isEdit && <button className={styles.revisionButton} onClick={() => setExpanded(!expanded)}>
                     {expanded && 'Collapse' || 'Expand'}
                 </button>}
-                {!readOnly && !isEditSpec &&
+                {!readOnly && !isEdit &&
                     <button className={styles.revisionButton} onClick={triggerEdit}>Edit...</button>}
-                {!readOnly && !isEditSpec &&
+                {!readOnly && !isEdit &&
                     <button className={styles.revisionButton} onClick={triggerRemove}>Remove</button>}
-                {!readOnly && isTenantAdmin && !isEditSpec &&
+                {!readOnly && isTenantAdmin && !isEdit &&
                     <button className={styles.adminButton} onClick={triggerManualPrice}>Manually Price</button>}
             </div>
         </div>
 
-        {!isEditSpec && <>
+        {!isEdit && <>
             <div className={styles.subtitle}>{spec.quantity} unit{spec.quantity != 1 && 's'}
                 {' '}•{' '}
                 {actor && bboxPretty(actor.bbox)}
@@ -468,22 +425,10 @@ export function Print3dComponent({
             </div>
         </>}
 
-        {!isEditSpec && actor?.bbox && <RerenderOnWidthChange height={400} className={styles.canvas}>
-            {(width, render, canvasRef) => (
-                // render() is stable, since created with useCallback.
-                // Memorizing this expensive component means that it is not re-rendered when the parent element
-                // changes. Only when the props change.
-                <MemoizedModelPreview
-                    actorIndex={actorIndex}
-                    width={width}
-                    height={400}
-                    spec={spec} analysis={analysis}
-                    render={render}
-                    canvasRef={canvasRef}/>
-            )}
-        </RerenderOnWidthChange>}
+        {!isEdit && actor?.bbox && <Memoized3d
+            actorIndex={actorIndex} orderId={spec?.order_id} fileRevisionId={spec?.stl} analysis={analysis}/>}
 
-        {expanded && !isEditSpec && <>
+        {expanded && !isEdit && <>
             <section>
                 <h4>Files</h4>
                 <table className={styles.table}>
@@ -509,7 +454,7 @@ export function Print3dComponent({
             </section>
         </>}
 
-        {expanded && actor && !isEditSpec && <>
+        {expanded && actor && !isEdit && <>
             <section>
                 <h4>Specification</h4>
                 <table className={styles.table}>
@@ -536,7 +481,7 @@ export function Print3dComponent({
 
         </>}
 
-        {isEditSpec && <>
+        {isEdit && <>
             <section>
                 <Print3dForm initial={spec} trigger={handleSpec}></Print3dForm>
             </section>

@@ -106,6 +106,7 @@ export function AddressManager({revision, country}: AddressManagerProps) {
         const {
             order_id,
             id: newRevisionId,
+            version_id,
             account_id
         } = await quote(supabase, {
             revision_id: revision.id,
@@ -120,7 +121,7 @@ export function AddressManager({revision, country}: AddressManagerProps) {
             new_price_quality: '',
             new_order_review_state: '',
         });
-        navigate(`/a/${account_id}/order/${order_id}?rev=${newRevisionId}`);
+        navigate(`/a/${account_id}/order/${order_id}/version/${version_id}/${newRevisionId}`);
     };
 
     if (!visible) {

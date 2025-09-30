@@ -5,14 +5,16 @@ import {SupabaseClient} from "@supabase/supabase-js";
 
 import type {Database} from "./supabase.ts";
 import {
+    Currency,
     ItemInsert,
-    OrderAddressInsert, PriceQuality,
+    OrderAddressInsert, PartVariation, PartWithRelations, PriceQuality,
     ReviewState, Revision, SpecAny,
     SpecFWPipe,
     SpecLaminateSheet,
     SpecPrint3d,
     SpecRubberCompressionMold
 } from "./types";
+import {supabase} from "@supabase/auth-ui-shared";
 
 export type QuotePipeRequest = {
     account_id: string;
@@ -81,7 +83,8 @@ export function isSpecLaminateSheetSame(a: SpecLaminateSheet, b: SpecLaminateShe
 
 export function isSpecPrint3dSame(a: SpecPrint3d, b: SpecPrint3d): boolean {
     return a.stl === b.stl &&
-        a.quantity === b.quantity;
+        a.quantity === b.quantity &&
+        a.sub_system === b.sub_system;
 }
 
 export function resolvedLeadTime(itemsInPart: ItemInsert[], item: ItemInsert): number {
@@ -234,7 +237,9 @@ export function formatDurationAgo(date: Date): string {
 
 
 export function currencyFormat(v, symbol) {
-    return `${symbol}${(v / 100).toFixed(2)}`;
+    const prefix = v > 0 ? '' : '-';
+    const vabs = Math.abs(v);
+    return `${prefix}${symbol}${(vabs / 100).toFixed(2)}`;
 }
 
 
@@ -617,3 +622,111 @@ export async function crossSpecAndFiles(specType: string, spec: SpecAny, files: 
     return ret;
 }
 
+
+
+export const reviseQuote = async (
+    supabase: SupabaseClient,
+    revision: Revision,
+    touchedSpec,
+    touchedAppendSpecs,
+    appendSpecsFiles,
+    isTenantAdmin,
+    manualPriceSpecs,
+    currency: Currency | '', quality: PriceQuality, newValidity: number,
+                            newOrderReviewState: ReviewState | '',
+    ) => {
+    const quoteSpec = {};
+    for (const key in touchedSpec) {
+        quoteSpec[key] = touchedSpec[key];
+    }
+
+    // Add the amended specs.
+    let nextKey = revision.Part.length;
+
+    for (let index = 0; index < touchedAppendSpecs.length; index++) {
+        const appendSpec = touchedAppendSpecs[index];
+        const appendSpecFiles = appendSpecsFiles[index];
+
+        for (const crossedSpec of await crossSpecAndFiles(appendSpec.type, appendSpec, appendSpecFiles)) {
+            quoteSpec[nextKey] = crossedSpec;
+            nextKey++;
+        }
+    }
+
+    // Override any specs with manual prices.
+    for (const key in manualPriceSpecs) {
+        quoteSpec[key] = manualPriceSpecs[key];
+    }
+
+    let req: QuotePipeRequest = {
+        revision_id: revision.id,
+        newVersion: false,
+        specs: quoteSpec,
+        currency: currency,
+        account_id: revision.account_id,
+
+        new_shipping_address: null,
+        new_billing_address: null,
+
+        new_validity: -1,
+        new_price_quality: "",
+        new_order_review_state: ""
+    }
+    if (isTenantAdmin) {
+        req = {
+            ...req,
+            new_validity: newValidity,
+            new_price_quality: quality,
+            new_order_review_state: newOrderReviewState,
+        };
+    }
+    const {
+        order_id,
+        id: newRevisionId,
+        account_id
+    } = await quote(supabase, req);
+    return newRevisionId;
+}
+
+export const quoteVariation = async (supabase: SupabaseClient, revisionId: string, variations: any[])=>  {
+    return req(supabase, `/1/quoteVariation`, 'POST', {revision_id: revisionId, variations: variations});
+}
+
+
+export interface PartDispatchProps {
+    part: PartWithRelations;
+    partVariations: PartVariation[];
+    actorIndex: number;
+    partName: string;
+    partType: string;
+    specId: string;
+    orderId: string;
+    stablePartId: string;
+    onSpecChange: (touched: boolean, spec: SpecAny, triggerRevise: boolean) => void;
+    isEdit: boolean;
+    triggerEdit: () => void;
+    triggerRemove: () => void;
+    triggerManualPrice: () => void;
+    readOnly: boolean;
+    symbol: string;
+}
+
+export interface PartComponentProps {
+    part: PartWithRelations;
+    partVariations: PartVariation[];
+    actorIndex: number;
+    partName: string;
+    partType: string;
+    orderId: string;
+    stablePartId: string;
+    onSpecChange: (touched: boolean, spec: SpecAny, triggerRevise: boolean) => void;
+    isEdit: boolean;
+    triggerEdit: () => void;
+    triggerRemove: () => void;
+    triggerManualPrice: () => void;
+    readOnly: boolean;
+    symbol: string;
+    spec: SpecAny;
+    analysis: any;
+    files: File[];
+}

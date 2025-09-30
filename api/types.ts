@@ -72,14 +72,21 @@ export type PriceQuality =
 
 
 export const allSpecTypes = [
-    'fwpipe',
-    'rollwrappedpipe',
-    'pultruded',
-    'rubber_injection_mold',
-    'rubber_compression_mold',
-    'rubber_overmold',
-    'rubber_transfer_mold',
-    'laminate_sheet',
+    // 'fwpipe',
+    // 'rollwrappedpipe',
+    // 'pultruded',
+    // 'rubber_injection_mold',
+    // 'rubber_compression_mold',
+    // 'rubber_overmold',
+    // 'rubber_transfer_mold',
+    // 'laminate_sheet',
     '3dp']
 
 
+export interface PartVariation {
+    variation: {
+        type: string;
+        attr: Record<string, any>;
+    };
+    part: PartWithRelations;
+}

@@ -18,7 +18,7 @@ export function Print3dForm({
                                 trigger,
                                 isNew,
                                 setFiles,
-                            }: SpecLaminateSheetFormProps) {
+                            }: Print3dFormProps) {
     const [spec, setSpec] = useState<SpecPrint3d>(initial);
 
     const changeAttr = (attr: Partial<SpecPrint3d>) => {

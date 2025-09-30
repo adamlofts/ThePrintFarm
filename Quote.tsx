@@ -2,22 +2,16 @@ import React, {useEffect, useState} from 'react'
 import {createRoot} from 'react-dom/client';
 import {BrowserRouter, Route, Routes, useNavigate, useParams} from 'react-router-dom';
 import {NewQuotePage} from './pages/NewQuotePage';
-import OrderPage from './pages/OrderPage';
 import {SupabaseProvider, useSupabase} from "./hooks/SupabaseProvider";
 import {RendererProvider} from "./hooks/RendererProvider";
 import {AuthPage} from "./pages/AuthPage";
 import {ListPage} from "./pages/ListPage";
 import {CompleteProfilePage} from "./pages/CompleteProfilePage";
 import {AccountsProvider} from "./hooks/AccountsProvider";
+import {OrderPage} from "./pages/OrderPage";
 
 import './style-quote.scss';
 
-
-function OrderPageRemount({}) {
-    const {order, version} = useParams();
-    // force remount on version change
-    return <OrderPage key={`${order} ${version} `}/>
-}
 
 function ListPageRemount({isOrder}) {
     const {account} = useParams();
@@ -90,8 +84,10 @@ function AppRoutes() {
             <Route path="/a/:account/new" element={<NewQuotePageRemount/>}/>
             <Route path="/a/:account/new/:spec" element={<NewQuotePageRemount/>}/>
 
-            <Route path="/a/:account/order/:order" element={<OrderPageRemount/>}/>
-            <Route path="/a/:account/order/:order/version/:version" element={<OrderPageRemount/>}/>
+            <Route path="/a/:account/order/:order" element={<OrderPage/>}/>
+            <Route path="/a/:account/order/:order/version/:version" element={<OrderPage/>}/>
+            <Route path="/a/:account/order/:order/version/:version/:rev" element={<OrderPage/>}/>
+
             <Route path="/a/:account/quotes" element={<ListPageRemount isOrder={false}/>}/>
             <Route path="/a/:account/orders" element={<ListPageRemount isOrder={true}/>}/>
         </Routes>

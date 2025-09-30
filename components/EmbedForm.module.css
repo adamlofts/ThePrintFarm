@@ -77,3 +77,41 @@
     color:red;
     padding: 1em;
 }
+
+
+.panel {
+    background-color: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--panel-radius);
+    padding: 2em;
+}
+.hover {
+    background-color: red !important;
+    pointer-events: none;
+}
+
+.files {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+    flex-direction: column;
+}
+
+.docs {
+    display: flex;
+    gap: 1em
+}
+.doc {
+    position: relative;
+}
+
+.doc > img{
+    height: 80px;
+}
+
+.doc > span {
+    bottom: 4px;
+    position: absolute;
+    right: 8px;
+    font-size: 80%;
+}

@@ -1,14 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
+import {FileForm,} from '@components/EmbedForm';
 
 import styles from './NewQuotePage.module.css';
 import {useSupabase} from "@hooks/SupabaseProvider";
-import {getTenantId, useAccountsAndTenantAdmin} from "@hooks/AccountsProvider";
+import {useAccountsAndTenantAdmin} from "@hooks/AccountsProvider";
 import {CamyNav} from "@components/CamyNav";
 import {useNavigate, useParams} from 'react-router-dom';
-import {EmbedForm} from "../components/EmbedForm";
+import {defaultSpec} from "../api/api";
 import {allSpecTypes} from "../api/types";
+import {FileDropForm} from "@components/FileDropForm";
 
 export function NewQuotePage() {
+    const dropTargetRef = useRef<HTMLDivElement>(null);
+
     const {spec: paramSpec} = useParams();
     const {supabase, loading: supabaseLoading, authenticated} = useSupabase();
     const {focusedAccount, loading: accountLoading} = useAccountsAndTenantAdmin();
@@ -27,33 +31,23 @@ export function NewQuotePage() {
         navigate('/');
     }, [authenticated, supabaseLoading, accountLoading]);
 
-    const triggerSpecTypeChange = (newSpecType: string)=> {
-        if (focusedAccount) {
-            navigate(`/a/${focusedAccount.account_id}/new/${newSpecType}`, {replace: true});
-        } else{
-            navigate(`/new/${newSpecType}`, {replace: true});
-        }
-    }
-
     const newQuoteHandler = ({account_id, order_id}) => {
         navigate(`/a/${account_id}/order/${order_id}`);
     }
 
+    const spec = defaultSpec('3dp');
+
     return <>
         <CamyNav/>
-        <div className={styles.bg}>
+        <div className={styles.bg} ref={dropTargetRef}>
             <div className="container py-5 mb-5">
-                <div className="row">
-                    <div className="col-12">
-                        <div className={styles.panel}>
-                            <EmbedForm
-                                specType={specType} setSpecType={triggerSpecTypeChange}
-                                onNewQuote={newQuoteHandler} specTypes={allSpecTypes}
-                                account_id={focusedAccount?.account_id}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <FileDropForm
+                    spec={spec}
+                    specType={specType}
+                    onNewQuote={newQuoteHandler}
+                    account_id={focusedAccount?.account_id}
+                    dropTargetElmt={dropTargetRef.current}
+                />
             </div>
         </div>
     </>

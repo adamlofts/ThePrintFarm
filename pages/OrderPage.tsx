@@ -1,17 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
-import {OrderComponent} from '../components/OrderComponent';
+import {useLocation, useParams} from 'react-router-dom';
+import {OrderHeaderComponent} from '@components/OrderHeaderComponent';
 import {
-    crossSpecAndFiles,
     Currency,
     defaultSpec,
     Item,
     OrderWithVersions,
     PriceQuality,
-    quote,
-    QuotePipeRequest,
     resolvedLeadTime,
     ReviewState,
+    reviseQuote,
     RevisionWithRelations,
     SpecAny,
     SpecManual
@@ -30,11 +28,16 @@ import {allSpecTypes} from "../api/types";
 const useQuery = () => new URLSearchParams(useLocation().search);
 
 
-function OrderPage({}) {
-    const {order: orderId, version: versionId} = useParams();
+interface OrderComponentProps {
+    orderId: string;
+    versionId: string;
+    revisionId: string;
+    onNewRevision: (newRevisionId: string) => void;
+}
+
+function OrderComponent({orderId, versionId, revisionId, onNewRevision}: OrderComponentProps) {
     const {isTenantAdmin, focusedAccount} = useAccountsAndTenantAdmin();
 
-    const navigate = useNavigate();
     const {supabase, loading} = useSupabase();
     const query = useQuery();
 
@@ -52,11 +55,6 @@ function OrderPage({}) {
     const [removeIndexes, setRemoveIndexes] = useState<number[]>([]);
     const [manualPriceSpecs, setManualPriceSpecs] = useState({});  // index -> ManualSpec
     const [isRevising, setIsRevising] = useState(false);
-
-    // This query parameter is passed when navigating to a new revision so we can force a component reload.
-    // We DO NOT use it to query data, and data always comes from .latest_revision. This means the user will not see
-    // stale data when pressing the back button.
-    const queryRevisionId = query.get('rev');
 
     useEffect(() => {
         let isMounted = true;
@@ -102,17 +100,44 @@ function OrderPage({}) {
         return () => {
             isMounted = false;
         };
-    }, [orderId, queryRevisionId]);
+    }, [orderId, revisionId]);
 
-    const handleSpecChange = (index: number, newTouched: boolean, partType: string, newTouchedSpec: any) => {
-        setTouchedSpec({
+    const handleSpecChange = async (index: number, newTouched: boolean, partType: string, newSpec: any, triggerRevise: boolean) => {
+        const newTouchedSpec = {
             ...touchedSpec,
             [index]: {
-                ...newTouchedSpec,
+                ...newSpec,
                 type: partType,
             },
-        });
+        };
+
+        setTouchedSpec(newTouchedSpec);
         setTouched(newTouched);
+
+        if (triggerRevise) {
+            const newRevisionId = await reviseQuote(
+                supabase,
+                revision,
+                newTouchedSpec,
+                touchedAppendSpecs,
+                appendSpecsFiles,
+                isTenantAdmin,
+                manualPriceSpecs,
+                '', '', -1,
+                '');
+
+            setEditIndexes([]);
+            setRemoveIndexes([]);
+            setAppendSpecs([]);
+            setAppendSpecsFiles({});
+            setTouchedAppendSpecs([]);
+            setTouched(false);
+            setTouchedSpec({});
+            setManualPriceSpecs([]);
+            setIsRevising(false);
+
+            onNewRevision(newRevisionId);
+        }
     };
 
     const handleTriggerRemove = (partIndex: number) => {
@@ -165,56 +190,15 @@ function OrderPage({}) {
 
     const handleRevise = async (currency: Currency | '', quality: PriceQuality, newValidity: number,
                                 newOrderReviewState: ReviewState | '') => {
-        const quoteSpec = {};
-        for (const key in touchedSpec) {
-            quoteSpec[key] = touchedSpec[key];
-        }
-
-        // Add the amended specs.
-        let nextKey = revision.Part.length;
-
-        for (let index = 0; index < touchedAppendSpecs.length; index++) {
-            const appendSpec = touchedAppendSpecs[index];
-            const appendSpecFiles = appendSpecsFiles[index];
-
-            for (const crossedSpec of await crossSpecAndFiles(appendSpec.type, appendSpec, appendSpecFiles)) {
-                quoteSpec[nextKey] = crossedSpec;
-                nextKey++;
-            }
-        }
-
-        // Override any specs with manual prices.
-        for (const key in manualPriceSpecs) {
-            quoteSpec[key] = manualPriceSpecs[key];
-        }
-
-        let req: QuotePipeRequest = {
-            revision_id: revision.id,
-            newVersion: false,
-            specs: quoteSpec,
-            currency: currency,
-            account_id: focusedAccount.account_id,
-
-            new_shipping_address: null,
-            new_billing_address: null,
-
-            new_validity: -1,
-            new_price_quality: "",
-            new_order_review_state: ""
-        }
-        if (isTenantAdmin) {
-            req = {
-                ...req,
-                new_validity: newValidity,
-                new_price_quality: quality,
-                new_order_review_state: newOrderReviewState,
-            };
-        }
-        const {
-            order_id,
-            id: newRevisionId,
-            account_id
-        } = await quote(supabase, req);
+        const newRevisionId = await reviseQuote(supabase,
+            revision,
+            touchedSpec,
+            touchedAppendSpecs,
+            appendSpecsFiles,
+            isTenantAdmin,
+            manualPriceSpecs,
+            currency, quality, newValidity,
+            newOrderReviewState);
 
         setEditIndexes([]);
         setRemoveIndexes([]);
@@ -225,7 +209,8 @@ function OrderPage({}) {
         setTouchedSpec({});
         setManualPriceSpecs([]);
         setIsRevising(false);
-        navigate(`/a/${account_id}/order/${orderId}?rev=${newRevisionId}`);
+
+        onNewRevision(newRevisionId);
     }
 
     const handleAppend = (newSpec) => {
@@ -302,66 +287,83 @@ function OrderPage({}) {
 
 
     return <>
-        <CamyNav/>
-        <div className={styles.container}>
-            <div className="row gx-0">
-                <div className={`${styles.mainColumn} ${revisionResult ? '' : styles.mainColumnLoading}`}>
-                    {order && revision &&
-                        <OrderComponent order={order} version={version} revision={revision}/>}
+        <div className={`${styles.mainColumn} ${revisionResult ? '' : styles.mainColumnLoading}`}>
+            {false && order && revision &&
+                <OrderHeaderComponent order={order} version={version} revision={revision}/>}
 
-                    {!revisionResult && <div className={styles.panelWipe}>
+            {!revisionResult && <div className={styles.panelWipe}>
 
-                        Calculating…</div>}
+                Calculating…</div>}
 
-                    {revisionResult && <RevisionComponent
-                        readOnly={readOnly}
-                        revision={revision}
-                        onSpecChange={handleSpecChange}
-                        editIndexes={editIndexes}
-                        removeIndexes={removeIndexes}
-                        triggerEdit={handleTriggerEdit}
-                        triggerRemove={handleTriggerRemove}
-                        triggerManualPrice={handleTriggerManualPrice}
-                        manualPriceSpecs={manualPriceSpecs}
+            {revisionResult && <RevisionComponent
+                readOnly={readOnly}
+                revision={revision}
+                onSpecChange={handleSpecChange}
+                editIndexes={editIndexes}
+                removeIndexes={removeIndexes}
+                triggerEdit={handleTriggerEdit}
+                triggerRemove={handleTriggerRemove}
+                triggerManualPrice={handleTriggerManualPrice}
+                manualPriceSpecs={manualPriceSpecs}
+                isEdit={isRevising}
+                updateManualPriceSpec={handleUpdateManualPriceSpec}
+            />}
+
+            {appendSpecs.map((spec, index) =>
+                <div key={index} className={styles.appendFrame}>
+                    <FormDispatch initial={spec}
+                                  onSpecChange={(touched, newSpec) => handleAppendSpecChange(index, newSpec)}
+                                  symbol={symbol} isNew={true}
+                                  setFiles={files => handleAppendSpecFiles(index, files)}
+                    ></FormDispatch>
+                </div>)}
+
+            {revisionResult && !readOnly && <div className={styles.appendButtons}>
+                <SpecDropdown onChange={handleAddTube} specTypes={allSpecTypes}/>
+
+                {isTenantAdmin &&
+                    <button className={styles.adminButton} onClick={handleAddManual}>Add New Manual</button>}
+            </div>}
+        </div>
+
+        <div className={styles.stickyColumn}>
+            <div className={styles.stickySpacer}></div>
+            <div className={styles.stickyContainer}>
+                <div className={styles.sticky}>
+                    {version && revision && revisionResult && <OrderCTA
+                        key={revision.id}
+                        order={order} version={version} revision={revision} touched={touched}
                         isEdit={isRevising}
-                        updateManualPriceSpec={handleUpdateManualPriceSpec}
-                    />}
-
-                    {appendSpecs.map((spec, index) =>
-                        <div key={index} className={styles.appendFrame}>
-                            <FormDispatch initial={spec}
-                                          onSpecChange={(touched, newSpec) => handleAppendSpecChange(index, newSpec)}
-                                          symbol={symbol} isNew={true}
-                                          setFiles={files => handleAppendSpecFiles(index, files)}
-                            ></FormDispatch>
-                        </div>)}
-
-                    {revisionResult && !readOnly && <div className={styles.appendButtons}>
-                        <SpecDropdown onChange={handleAddTube} specTypes={allSpecTypes}/>
-
-                        {isTenantAdmin &&
-                            <button className={styles.adminButton} onClick={handleAddManual}>Add New Manual</button>}
-                    </div>}
-                </div>
-
-                <div className={styles.stickyColumn}>
-                    <div className={styles.stickySpacer}></div>
-                    <div className={styles.stickyContainer}>
-                        <div className={styles.sticky}>
-                            {version && revision && revisionResult && <OrderCTA
-                                key={revision.id}
-                                order={order} version={version} revision={revision} touched={touched}
-                                isEdit={isRevising}
-                                triggerRevert={handleRevert}
-                                triggerRevise={handleRevise}
-                                triggerBeginRevise={handleBeginRevise}
-                            ></OrderCTA>}
-                        </div>
-                    </div>
+                        triggerRevert={handleRevert}
+                        triggerRevise={handleRevise}
+                        triggerBeginRevise={handleBeginRevise}
+                    ></OrderCTA>}
                 </div>
             </div>
         </div>
     </>
 }
 
-export default OrderPage;
+
+export function OrderPage({}) {
+    const {order: orderId, version: versionId, rev: rev} = useParams();
+    const [revisionId, setRevisionId] = useState('');
+
+    // If the revision parameter changes in navigate, then change the displayed revision id
+    useEffect(() => {
+        if (!rev) {
+            return;
+        }
+        setRevisionId(rev);
+    }, [rev]);
+
+    return <>
+        <CamyNav/>
+        <div className={styles.container}>
+            <div className="row gx-0">
+                <OrderComponent
+                    orderId={orderId} versionId={versionId} revisionId={revisionId} onNewRevision={setRevisionId}/>
+            </div>
+        </div>
+    </>
+}

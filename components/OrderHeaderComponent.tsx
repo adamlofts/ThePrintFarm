@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import styles from './OrderComponent.module.css';
+import styles from './OrderHeaderComponent.module.css';
 import {OrderWithVersions, quote, Revision, SpecManual, Version} from "@api/api";
 import {Button, ButtonGroup, Dropdown} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
@@ -19,7 +19,7 @@ interface OrderComponentProps {
     revision: Revision;
 }
 
-export function OrderComponent({order, version: focusedVersion, revision}: OrderComponentProps) {
+export function OrderHeaderComponent({order, version: focusedVersion, revision}: OrderComponentProps) {
     const navigate = useNavigate();
     const {supabase} = useSupabase();
     const {focusedAccount} = useAccountsAndTenantAdmin();

@@ -10,9 +10,10 @@ type RerenderOnWidthChangeProps = {
     ) => React.ReactNode;
     height: number;
     className: string;
+    containerStyle?: React.CSSProperties;
 };
 
-export function RerenderOnWidthChange({children, height, className}: RerenderOnWidthChangeProps) {
+export function RerenderOnWidthChange({children, height, className, containerStyle}: RerenderOnWidthChangeProps) {
     const {renderer, offscreen} = useContext(RendererContext);
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,7 +87,7 @@ export function RerenderOnWidthChange({children, height, className}: RerenderOnW
     }, []);
 
     return (
-        <div ref={containerRef}>
+        <div ref={containerRef} style={containerStyle}>
             <React.Fragment key={width}>
                 {width > 0 ? children(width, queueRender, canvasRef) : null}
             </React.Fragment>

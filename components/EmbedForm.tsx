@@ -1,13 +1,18 @@
 import React, {useState} from 'react'
 import styles from './EmbedForm.module.css';
-import {defaultSpec,} from "@api/api";
+import {crossSpecAndFiles, defaultSpec, quote} from "@api/api";
 import {useSupabase} from "@hooks/SupabaseProvider";
 import {Auth} from "@supabase/auth-ui-react";
 import {ThemeSupa} from "@supabase/auth-ui-shared";
 import {SpecDropdown} from "./SpecDropdown";
 import {FormDispatch} from "./PartDispatch";
-import type {SpecAny} from "@api/types";
-import {crossSpecAndFiles ,quote} from "@api/api";
+import {FileDropWrapper} from "./ui/FileDropWrapper";
+
+
+type BodyFileDropProps = {
+    onFilesDropped: (files: FileList) => void;
+};
+
 
 export function EmbedForm({specType, setSpecType, onNewQuote, specTypes, account_id}) {
     const {supabase, loading: supabaseLoading, authenticated} = useSupabase();
@@ -95,4 +100,3 @@ export function EmbedForm({specType, setSpecType, onNewQuote, specTypes, account
         </div>
     </>;
 }
-

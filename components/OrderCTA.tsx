@@ -70,7 +70,7 @@ export function OrderCTA({
             new_price_quality: null,
             new_order_review_state: 'in_review',
         });
-        navigate(`/a/${order.account_id}/order/${order.id}?rev=${newRevisionId}`);
+        navigate(`/a/${order.account_id}/order/${order.id}/version/${version.id}/${newRevisionId}`);
     }
 
     const handlePaymentReceived = async () => {
@@ -95,7 +95,7 @@ export function OrderCTA({
             ordered_revision_id: revision.id,
             ordered_version_id: version.id,
         });
-        navigate(`/a/${order.account_id}/order/${order.id}?rev=beginorder`);
+        navigate(`/a/${order.account_id}/order/${order.id}/version/${version.id}/beginorder`);
     }
 
     if (!focusedAccount) {
