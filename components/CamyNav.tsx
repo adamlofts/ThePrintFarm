@@ -67,9 +67,11 @@ export function CamyNav({}: CamyNavProps) {
             <Container fluid={true}>
                 {!isTenantAdmin &&
                 <>
-                    {/*{brand.logo && <Navbar.Brand href={import.meta.env.VITE_ROUTER_BASENAME}>*/}
-                    {/*    <img src={brand.logo} style={{height: brand.logoHeight}}/></Navbar.Brand>}*/}
-                    <Navbar.Brand href={import.meta.env.VITE_ROUTER_BASENAME}>ThePrintFarm</Navbar.Brand>
+                    <Navbar.Brand href={import.meta.env.VITE_ROUTER_BASENAME}>
+                        <img
+                            src="https://images.squarespace-cdn.com/content/v1/68be8411d6e2ce3c2038f169/f19e1456-5d50-410e-ba76-c7fd61b5a241/TPF_Logo.png?format=1500w" style={{height: '80px'}}/>
+                    </Navbar.Brand>
+                    {/*<Navbar.Brand href={import.meta.env.VITE_ROUTER_BASENAME}>ThePrintFarm</Navbar.Brand>*/}
                 </>}
                 {isTenantAdmin && <Navbar.Brand>Customer: <b>{focusedAccount.name}</b></Navbar.Brand>}
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>

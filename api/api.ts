@@ -500,7 +500,7 @@ export const laminateSheetMaterialOptions = [
 export function defaultSpecPrint3d() {
     return {
         type: '3dp',
-        quantity: 10,
+        quantity: 1,
 
         system: 'fdm',
         sub_system: 'pla',

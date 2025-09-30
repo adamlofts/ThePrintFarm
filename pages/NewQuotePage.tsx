@@ -9,6 +9,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {defaultSpec} from "../api/api";
 import {allSpecTypes} from "../api/types";
 import {FileDropForm} from "@components/FileDropForm";
+import {Footer} from "@components/Footer";
 
 export function NewQuotePage() {
     const dropTargetRef = useRef<HTMLDivElement>(null);

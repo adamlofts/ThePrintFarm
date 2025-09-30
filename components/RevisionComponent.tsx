@@ -115,7 +115,10 @@ export function RevisionComponent({
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await quoteVariation(supabase, revision.id, [{sub_system: 'pla'}]);
+            const variations = print3dSubSystemOptions.map(o => ({
+                sub_system: o.value,
+            }))
+            const data = await quoteVariation(supabase, revision.id, variations);
             setVariations(data.variations);
         }
         fetchData();
@@ -176,53 +179,53 @@ export function RevisionComponent({
                 />;
             })}
 
-            <div className={styles.spacer}></div>
+            {/*<div className={styles.spacer}></div>*/}
 
-            {revision.ShippingItem.length > 0 && !isEdit &&
-                <>
-                    {revision.OrderAddress && <div className={styles.name}>Shipping to {revision.OrderAddress.country}</div>}
-                    <div className={styles.totalRow}></div>
-                    <div className={styles.totalRow}></div>
-                    <div className={styles.total}>
-                        {currencyFormat(revision.shipping_total, symbol)}
-                    </div>
-                </>
-            }
+            {/*{revision.ShippingItem.length > 0 && !isEdit &&*/}
+            {/*    <>*/}
+            {/*        {revision.OrderAddress && <div className={styles.name}>Shipping to {revision.OrderAddress.country}</div>}*/}
+            {/*        <div className={styles.totalRow}></div>*/}
+            {/*        <div className={styles.totalRow}></div>*/}
+            {/*        <div className={styles.total}>*/}
+            {/*            {currencyFormat(revision.shipping_total, symbol)}*/}
+            {/*        </div>*/}
+            {/*    </>*/}
+            {/*}*/}
 
-            {revision.grand_total > 0 && !isEdit && <>
-                <div className={styles.name}>Total</div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.total}>
-                    {currencyFormat(revision.total, symbol)}
-                </div>
+            {/*{revision.grand_total > 0 && !isEdit && <>*/}
+            {/*    <div className={styles.name}>Total</div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.total}>*/}
+            {/*        {currencyFormat(revision.total, symbol)}*/}
+            {/*    </div>*/}
 
-                <div className={styles.spacer}></div>
+            {/*    <div className={styles.spacer}></div>*/}
 
-                <div className={styles.name}>Tax</div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.total}>
-                    {symbol}{(revision.tax / 100).toFixed(2)}
-                </div>
+            {/*    <div className={styles.name}>Tax</div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.total}>*/}
+            {/*        {symbol}{(revision.tax / 100).toFixed(2)}*/}
+            {/*    </div>*/}
 
-                <div className={styles.name}>Grand Total ({revision.currency})</div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.totalRow}></div>
-                <div className={styles.total}>
-                    {symbol}{(revision.grand_total / 100).toFixed(2)}
-                </div>
-            </>}
-            <>
-                <div className={styles.name}>Item</div>
-                <div className={styles.quantity}>Quantity</div>
-                <div className={styles.unitPrice}>Unit&nbsp;Price</div>
-                <div className={styles.total}>
-                    Total
-                </div>
-            </>
+            {/*    <div className={styles.name}>Grand Total ({revision.currency})</div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.totalRow}></div>*/}
+            {/*    <div className={styles.total}>*/}
+            {/*        {symbol}{(revision.grand_total / 100).toFixed(2)}*/}
+            {/*    </div>*/}
+            {/*</>}*/}
+            {/*<>*/}
+            {/*    <div className={styles.name}>Item</div>*/}
+            {/*    <div className={styles.quantity}>Quantity</div>*/}
+            {/*    <div className={styles.unitPrice}>Unit&nbsp;Price</div>*/}
+            {/*    <div className={styles.total}>*/}
+            {/*        Total*/}
+            {/*    </div>*/}
+            {/*</>*/}
 
-            <div className={styles.priceQuality}>{qualityNote[revision.lowest_quality]}</div>
+            {/*<div className={styles.priceQuality}>{qualityNote[revision.lowest_quality]}</div>*/}
 
         </div>
 

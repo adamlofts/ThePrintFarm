@@ -4,7 +4,7 @@
 
 .canvas {
     border: 1px solid white;
-
+flex-grow: 1;
 }
 .canvas:focus {
     border: 1px solid blue;
@@ -75,4 +75,10 @@
 
 .patternList {
     max-width: 40em;
+}
+
+
+.materials {
+    display: flex;
+    gap: 1em;
 }

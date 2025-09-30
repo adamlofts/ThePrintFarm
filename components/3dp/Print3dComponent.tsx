@@ -1,6 +1,9 @@
 import React, {ReactElement, Ref, useEffect, useState} from 'react'
 import * as THREE from "three";
-import {AnalysisPrint3d, endpoint, makeDownloadUrl, SpecPrint3d, Print3dForm, PartComponentProps} from "@api/api";
+import {
+    AnalysisPrint3d, endpoint, makeDownloadUrl, SpecPrint3d, Print3dForm, PartComponentProps,
+    print3dSubSystemOptions, currencyFormat
+} from "@api/api";
 import {Print3dForm} from "./SpecPrint3dForm";
 import {useSupabase} from "@hooks/SupabaseProvider";
 import styles from './Print3dComponent.module.css';
@@ -111,15 +114,15 @@ function toThreeMatrix(m) {
 }
 
 function ModelPreview({
-                            width,
-                            height,
-                            orderId,
+                          width,
+                          height,
+                          orderId,
                           fileRevisionId,
-                            analysis,
-    actorIndex,
-                            render,
-                            canvasRef,
-                        }: ModelPreviewProps) {
+                          analysis,
+                          actorIndex,
+                          render,
+                          canvasRef,
+                      }: ModelPreviewProps) {
     const {supabase, loading} = useSupabase();
     const [camera, setCamera] = useState<THREE.Camera>();
     const [scene, setScene] = useState<THREE.Scene>();
@@ -178,7 +181,11 @@ function ModelPreview({
             const loader = new STLLoader();
             const geometry = loader.parse(arrayBuffer);
 
-            let material = new THREE.MeshStandardMaterial({color: new THREE.Color().setRGB( 1., 0.5, 0.5 ), metalness: 0.1, roughness: 0.5});
+            let material = new THREE.MeshStandardMaterial({
+                color: new THREE.Color().setRGB(1., 0.5, 0.5),
+                metalness: 0.1,
+                roughness: 0.5
+            });
             const mesh = new THREE.Mesh(geometry, material);
             mesh.applyMatrix4(toThreeMatrix(actor.printMatrix));
 
@@ -217,10 +224,10 @@ function ModelPreview({
         const center = new THREE.Vector3();
         box.getCenter(center);
 
-        const distance = computeTightCameraDistance(box, camera.fov, width/height, new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1,0));
+        const distance = computeTightCameraDistance(box, camera.fov, width / height, new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1, 0));
 
         // Camera set up so that Z is up, X is right and Y towards camera
-        camera.position.set(center.x, center.y, center.z + (distance * (1.1-zoom)));
+        camera.position.set(center.x, center.y, center.z + (distance * (1.1 - zoom)));
 
         camera.up.set(0, 1, 0);
 
@@ -350,16 +357,16 @@ export function Print3dComponent({
                                      partVariations,
                                      actorIndex,
                                      partName,
-                                           partType,
+                                     partType,
                                      orderId,
                                      stablePartId,
-                                           onSpecChange,
-                                           isEdit,
-                                           triggerEdit,
-                                           triggerRemove,
-                                           triggerManualPrice,
-                                           readOnly,
-          symbol, spec, analysis, files
+                                     onSpecChange,
+                                     isEdit,
+                                     triggerEdit,
+                                     triggerRemove,
+                                     triggerManualPrice,
+                                     readOnly,
+    symbol, spec, analysis, files
                                      }: PartComponentProps) {
     const {supabase, loading} = useSupabase();
     const [expanded, setExpanded] = useState(false);
@@ -374,7 +381,7 @@ export function Print3dComponent({
             ...attr,
         };
         const equal = isSpecPrint3dSame(spec, newSpec);
-        onSpecChange(!equal, newSpec);
+        onSpecChange(!equal, newSpec, true);
     }
 
     function handleSpec(touched: boolean, newSpec: SpecPrint3d, valid: boolean) {
@@ -386,25 +393,43 @@ export function Print3dComponent({
         window.location.assign(url);
     }
 
+
     const bboxPretty = (bbox) => {
         return <>{(bbox[1][0] - bbox[0][0]).toFixed(0)}mm x
-        {' '}
-        {(bbox[1][1] - bbox[0][1]).toFixed(0)}mm x
-        {' '}
-        {(bbox[1][2] - bbox[0][2]).toFixed(0)}mm</>
+            {' '}
+            {(bbox[1][1] - bbox[0][1]).toFixed(0)}mm x
+            {' '}
+            {(bbox[1][2] - bbox[0][2]).toFixed(0)}mm</>
     }
 
-    return <>
-    {JSON.stringify(partVariations)}
+    const partUnit = part.Item.reduce((acc, item) => acc + item.unit_price, 0);
 
+    const materialOptions = print3dSubSystemOptions.map(o => {
+        // Look for a variation for this sub system
+        const variation = partVariations.find(v => v.variation.sub_system === o.value);
+        let variationUnit = 0;
+        if (variation) {
+            variationUnit = variation.part.items.reduce((acc, item) => acc + item.unit_price, 0);
+        }
+        let diff = 0;
+        if (variationUnit > 0 && partUnit > 0) {
+            diff = variationUnit - partUnit;
+        }
+        let diffElement = <></>;
+        if (Math.abs(diff) > 1) {
+            diffElement = <>{diff > 0 ? '+' : ''}{currencyFormat(diff, symbol)}</>
+        }
+        return <a className={`btn ${spec.sub_system === o.value ? 'btn-primary' : 'btn-outline-secondary    '}`} key={o.value}
+                  onClick={_ => trigger({sub_system: o.value})}
+        >{o.label} {diffElement}</a>;
+    });
+
+    return <>
         <div className={styles.titleLine}>
             <div>{partName}</div>
             <div className={styles.revisionButtons} role="group">
-                {!isEdit && <button className={styles.revisionButton} onClick={() => setExpanded(!expanded)}>
-                    {expanded && 'Collapse' || 'Expand'}
-                </button>}
-                {!readOnly && !isEdit &&
-                    <button className={styles.revisionButton} onClick={triggerEdit}>Edit...</button>}
+                {/*{!readOnly && !isEdit &&*/}
+                {/*    <button className={styles.revisionButton} onClick={triggerEdit}>Edit...</button>}*/}
                 {!readOnly && !isEdit &&
                     <button className={styles.revisionButton} onClick={triggerRemove}>Remove</button>}
                 {!readOnly && isTenantAdmin && !isEdit &&
@@ -412,21 +437,21 @@ export function Print3dComponent({
             </div>
         </div>
 
-        {!isEdit && <>
-            <div className={styles.subtitle}>{spec.quantity} unit{spec.quantity != 1 && 's'}
-                {' '}•{' '}
-                {actor && bboxPretty(actor.bbox)}
-                {' '}•{' '}
-                {files.length} file{files.length === 1 ? '' : 's'}
-                {' '}•{' '}
-                {latestFile && <a onClick={evt => setExpanded(true)}>
-                    {latestFile.name}
-                    {' '}{formatDurationAgo(new Date(latestFile.latestRevision.created_at))}</a>}
-            </div>
-        </>}
-
+        <div style={{display: 'flex'}}>
         {!isEdit && actor?.bbox && <Memoized3d
             actorIndex={actorIndex} orderId={spec?.order_id} fileRevisionId={spec?.stl} analysis={analysis}/>}
+
+            <div>
+            <div className={styles.subtitle}>
+                {actor && bboxPretty(actor.bbox)}
+            </div>
+
+                <div className={styles.materials}>
+                    {materialOptions}
+                </div>
+            </div>
+
+        </div>
 
         {expanded && !isEdit && <>
             <section>
@@ -473,7 +498,7 @@ export function Print3dComponent({
                     </tr>
                     <tr>
                         <td>Volume</td>
-                        <td>{(actor.volume/(10*10*10)).toFixed()}cm3</td>
+                        <td>{(actor.volume / (10 * 10 * 10)).toFixed()}cm3</td>
                     </tr>
                     </tbody>
                 </table>
