@@ -1,0 +1,29 @@
+/* title */
+.titleLine {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+.titleLine > div:first-child {
+    flex-grow: 1;
+}
+
+.revisionButtons {
+    composes: btn-group from global;
+    margin-right: -9px;
+    margin-top: -8px;
+}
+
+.revisionButton {
+    composes: btn btn-outline-primary from global;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.adminButton {
+    composes: btn btn-outline-success from global;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+

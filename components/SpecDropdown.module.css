@@ -1,0 +1,22 @@
+
+.productDropdown {
+    composes: dropdown from global;
+
+}
+
+.productDropdown > button {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    cursor: pointer;
+}
+
+.dropdownli {
+    cursor: pointer;
+}
+
+.dropdownItemContent {
+    composes: dropdown-item-content from global;
+    display: flex;
+    align-items: center;
+}

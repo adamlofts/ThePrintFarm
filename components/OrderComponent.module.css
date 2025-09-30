@@ -1,0 +1,53 @@
+.headerButton {
+    /*composes: btn btn-primary from global;*/
+}
+.headerRow {
+    composes: pt-2 px-2 from global;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+}
+.secondRow {
+    composes: pb-2 px-2 from global;
+
+}
+
+.text {
+    flex-grow: 1;
+}
+.buttons {
+    display: flex;
+    flex-direction: row;
+    margin-right: -9px;
+    margin-top: -11px;
+}
+
+.buttons button {
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.hash {
+    font-family: monospace;
+    color: #4a4a4a;
+}
+
+.nameButton {
+    composes: btn from global;
+    display: none;
+}
+
+.header:hover .nameButton {
+    display: block;
+}
+
+.header:hover .hash {
+    display: none;
+}

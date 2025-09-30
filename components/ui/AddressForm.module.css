@@ -1,0 +1,9 @@
+.buttons {
+    display:flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+}
+
+.button {
+    composes: btn btn-secondary from global;
+}

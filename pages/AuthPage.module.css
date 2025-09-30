@@ -1,0 +1,5 @@
+.panel {
+    background-color: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--panel-radius);
+}

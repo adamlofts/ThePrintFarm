@@ -1,0 +1,12 @@
+.row {
+    composes: row from global;
+}
+.labelCol {
+    composes: col-md-6 from global;
+    display: flex;
+    align-items: center;
+}
+
+.inputCol {
+    composes: col-md-6 from global;
+}

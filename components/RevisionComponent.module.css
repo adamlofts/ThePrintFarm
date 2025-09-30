@@ -1,0 +1,124 @@
+
+.part {
+    display: contents;
+}
+
+.partBody {
+    grid-column: span 4;
+    padding: 4px 8px;
+    margin-top: 8px;
+
+    border-top: 1px solid var(--panel-lift-border);
+    border-left: 1px solid var(--panel-lift-border);
+    border-right: 1px solid var(--panel-lift-border);
+    border-radius: 5px 5px 0 0;
+    background-color: var(--panel-lift);
+}
+
+.part:hover .partBody {
+    border-top: 1px solid var(--panel-lift-border-hover);
+    border-left: 1px solid var(--panel-lift-border-hover);
+    border-right: 1px solid var(--panel-lift-border-hover);
+    background-color: var(--panel-lift-hover);
+}
+
+.itemLeft {
+    border-left: 1px solid var(--panel-lift-border)
+}
+
+.itemRight {
+    border-right: 1px solid var(--panel-lift-border);
+}
+
+.itemBottom {
+    border-bottom: 1px solid var(--panel-lift-border);
+    padding-bottom: 5px;
+}
+
+.itemLeft.itemBottom {
+    border-radius: 0 0 0 5px;
+}
+
+.itemRight.itemBottom {
+    border-radius: 0 0 5px 0;
+}
+
+.part:hover .itemBottom {
+    border-bottom: 1px solid var(--panel-lift-border-hover);
+}
+
+.part:hover .itemLeft {
+    border-left: 1px solid var(--panel-lift-border-hover) !important;
+}
+
+.part:hover .itemRight {
+    border-right: 1px solid var(--panel-lift-border-hover) !important;
+}
+
+
+/* grid */
+
+.grid {
+    composes: py-2 px-2 from global;
+    display: grid;
+    grid-template-columns: 1fr min-content min-content min-content;
+}
+
+.itemCell {
+    background-color: var(--panel-lift);
+}
+
+.part:hover .itemCell {
+    background-color: var(--panel-lift-hover);
+}
+
+.quantity {
+    padding-right: 8px;
+    text-align: center;
+    font-family: monospace;
+
+}
+
+.name {
+    padding-left: 8px;
+}
+
+.unitPrice {
+    padding-right: 8px;
+    font-family: monospace;
+    text-align: right;
+}
+
+.total {
+    padding-right: 8px;
+    text-align: right;
+    font-family: monospace;
+}
+
+
+.item {
+    display: contents;
+}
+
+.spacer {
+    grid-column: span 4;
+    height: 8px;
+}
+
+.priceQuality {
+    composes: total;
+    grid-column: span 4;
+    margin-top: 5px;
+}
+
+/* title */
+.titleLine {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.titleLine > div:first-child {
+    flex-grow: 1;
+}

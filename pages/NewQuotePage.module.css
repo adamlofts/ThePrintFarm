@@ -1,0 +1,13 @@
+
+.panel {
+    background-color: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--panel-radius);
+    padding: 2em;
+}
+
+/*.bg {*/
+/*    background: radial-gradient(circle 25% 30%,*/
+/*    #f5f7fa 0%,*/
+/*    #d7dde5 60%);*/
+/*}*/

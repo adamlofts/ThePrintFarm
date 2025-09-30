@@ -1,0 +1,149 @@
+
+.container {
+    composes: container-fluid gx-0 from global;
+}
+
+.ctaButton {
+    composes: btn btn-secondary from global;
+}
+
+.adminButton {
+    composes: btn btn-outline-success from global;
+}
+
+
+.panel {
+    background-color: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--panel-radius);
+}
+
+.mainColumnLoading {
+    background: linear-gradient(
+            90deg,
+            var(--panel-lift) 25%,
+            rgba(222, 222, 222, 0.15) 50%,
+            var(--panel-lift) 75%
+    );
+    background-size: 200% 100%;
+    animation: loadingWipe 5s infinite linear;
+}
+
+.panelWipe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+    margin: 4em 0;
+}
+
+@keyframes loadingWipe {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.sticky {
+    composes: panel;
+
+    position: sticky;
+    top: 24px;
+    background-color: var(--panel-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    margin: 0 8px;
+}
+
+.stickySpacer {
+    height: 8px;
+}
+
+.stickyContainer {
+    height: 100%;
+}
+
+.stickyColumn {
+    composes: col-4 col-md-3 from global;
+}
+
+.mainColumn {
+    composes: col-8 col-md-9 from global;
+    composes: panel;
+
+    border-radius: 0 5px 5px 0;
+    margin-top: 9px;
+    margin-bottom: 3em;
+
+    min-height: 20em;
+}
+
+.appendButtons {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+    padding: 8px;
+}
+
+.appendButton {
+    composes: btn btn-secondary from global;
+}
+
+
+.appendFrame {
+    background-color: var(--panel-lift);
+    border: 1px solid var(--panel-lift-border);
+    border-radius: 5px;
+    margin: 0 8px 8px 8px;
+    padding: 8px;
+}
+
+.appendFrame:hover {
+    background-color: var(--panel-lift-hover);
+    border-color: var(--panel-lift-border-hover);
+}
+
+.leadHeader {
+    font-weight: bold;
+}
+.leadTime {
+    gap:14px;
+    display: flex;
+    border: 1px solid #0d6efd;
+    padding: 4px 8px;
+    border-radius: 5px 5px 0 0;
+    align-items: center;
+}
+
+.leadTime > div:nth-child(2) {
+    flex-grow: 1;
+    font-size: 14px;
+    font-weight: bold;
+    color: #595959;
+}
+
+.leadTime > div:nth-child(3) {
+    font-weight: bold;
+}
+
+.deliveryDay {
+    border: 1px solid #AAA;
+    background-color: #dbdbdb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 0 0 5px 5px;
+    padding: 8px 0;
+}
+
+.deliveryDay > div:nth-child(2) {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+

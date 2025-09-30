@@ -1,0 +1,79 @@
+.container {
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+}
+.row {
+    composes: row from global;
+}
+.labelCol {
+    composes: col-md-6 from global;
+    display: flex;
+    align-items: center;
+}
+
+.inputCol {
+    composes: col-md-6 from global;
+}
+.subheader {
+    font-weight: bold;
+    margin-top:1em;
+}
+
+.manualGrid {
+    display: grid;
+    grid-template-columns: 1fr min-content min-content min-content min-content;
+    column-gap: 5px;
+    row-gap: 5px;
+}
+
+.manualGridRow {
+    display: contents;
+}
+
+.total {
+    font-family: monospace;
+    justify-self: right;
+    align-self: center;
+}
+
+.numberColHeader {
+    width: 10em;
+}
+
+
+/* embed */
+
+.productRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.dropdownToggleText {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.actionButtons {
+    composes: mt-3 from global;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.panelTop {
+    border-top-left-radius: var(--panel-radius);
+    border-top-right-radius: var(--panel-radius);
+    margin: -2em -2em 2em;
+    padding: 2em 2em 1em;
+    background-color: white;
+}
+
+.error {
+    display: flex;
+    flex-direction: row-reverse;
+    color:red;
+    padding: 1em;
+}

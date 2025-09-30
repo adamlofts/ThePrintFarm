@@ -1,0 +1,107 @@
+
+.container {
+    composes: container-fluid gx-0 from global;
+}
+
+.panel {
+    background-color: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--panel-radius);
+}
+
+
+
+.mainColumn {
+    composes: col-8 col-md-9 from global;
+    composes: panel;
+
+    border-radius: 0 5px 5px 0;
+    margin-top: 9px;
+    margin-bottom: 3em;
+
+    min-height: 20em;
+}
+
+.appendButtons {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+    padding: 8px;
+}
+
+.appendButton {
+    composes: btn btn-secondary from global;
+}
+
+
+.appendFrame {
+    background-color: var(--panel-lift);
+    border: 1px solid var(--panel-lift-border);
+    border-radius: 5px;
+    margin: 0 8px 8px 8px;
+    padding: 8px;
+}
+
+.appendFrame:hover {
+    background-color: var(--panel-lift-hover);
+    border-color: var(--panel-lift-border-hover);
+}
+
+
+.grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr 1fr 1fr min-content max-content;
+    row-gap: 12px;
+    margin-top: 24px;
+
+    /*--panel-lift-border: #AAA;*/
+}
+
+.orderRow {
+    display: contents;
+}
+
+.orderRow > div:first-child {
+    border-left: 1px solid var(--panel-lift-border);
+    border-radius: 5px 0 0 5px;
+}
+
+
+.orderRow > div:last-child {
+    border-right: 1px solid var(--panel-lift-border);
+    border-radius: 0 5px 5px 0;
+}
+
+.orderRow > div {
+    background-color: var(--panel-lift);
+
+    border-top: 1px solid var(--panel-lift-border);
+    border-bottom: 1px solid var(--panel-lift-border);
+    display: flex;           /* flex is great inside a grid cell */
+    align-items: center;     /* vertical center */
+}
+
+.orderRow:hover > div {
+    background-color: aliceblue;
+    cursor: pointer;
+}
+
+
+.nameCol {
+    padding: 8px;
+}
+
+.timeCol {
+    font-size: 14px;
+    color: gray
+}
+
+.costCol {
+    padding: 8px;
+    font-weight: bold;
+}
+.qualityCol {
+    font-size: 14px;
+    color: grey;
+}
