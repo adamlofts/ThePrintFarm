@@ -51,5 +51,6 @@ export function NewQuotePage() {
                 />
             </div>
         </div>
+        <Footer/>
     </>
 }

@@ -68,17 +68,17 @@ export function FileDropForm({spec, specType, onNewQuote, account_id, dropTarget
                         <div className={styles.docs}>
                             <div className={styles.doc}>
                                 <img
-                                    src={`${import.meta.env.VITE_ROUTER_BASENAME}assets/doc.svg`}/>
+                                    src={`${import.meta.env.BASE_URL}assets/doc.svg`}/>
                                 <span>.STL</span>
                             </div>
                             <div className={styles.doc}>
                                 <img
-                                    src={`${import.meta.env.VITE_ROUTER_BASENAME}assets/doc.svg`}/>
+                                    src={`${import.meta.env.BASE_URL}assets/doc.svg`}/>
                                 <span>.PLY</span>
                             </div>
                             <div className={styles.doc}>
                                 <img
-                                    src={`${import.meta.env.VITE_ROUTER_BASENAME}assets/doc.svg`}/>
+                                    src={`${import.meta.env.BASE_URL}assets/doc.svg`}/>
                                 <span>.3MF</span>
                             </div>
                         </div>
