@@ -23,6 +23,7 @@ import {SpecDropdown} from "@components/SpecDropdown";
 import {OrderCTA} from "@components/OrderCTA";
 import {FormDispatch} from "../components/PartDispatch";
 import {allSpecTypes} from "../api/types";
+import {Footer} from "@components/Footer";
 
 
 const useQuery = () => new URLSearchParams(useLocation().search);
@@ -365,5 +366,6 @@ export function OrderPage({}) {
                     orderId={orderId} versionId={versionId} revisionId={revisionId} onNewRevision={setRevisionId}/>
             </div>
         </div>
+        <Footer/>
     </>
 }
